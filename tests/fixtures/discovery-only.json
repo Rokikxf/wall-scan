@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "tool": { "name": "wall-scan", "version": "0.1.0" },
+  "started_at": "2026-10-08T09:28:12.480Z",
+  "duration_ms": 2391,
+  "status": "ok",
+  "errors": [],
+  "params": {
+    "targets": ["192.168.1.0/24"],
+    "ports": null,
+    "privileged": true,
+    "timeout_s": 600
+  },
+  "result": {
+    "engine": { "name": "nmap", "version": "7.94SVN" },
+    "hosts_scanned": 256,
+    "devices": [
+      {
+        "ip": "192.168.1.1",
+        "mac": "50:c7:bf:12:34:56",
+        "vendor": "TP-Link Technologies",
+        "hostname": "router.lan",
+        "discovery_reason": "arp-response",
+        "open_ports": null
+      },
+      {
+        "ip": "192.168.1.50",
+        "mac": "3c:52:82:ab:cd:ef",
+        "vendor": "Hewlett Packard",
+        "hostname": "npi1a2b3c.lan",
+        "discovery_reason": "arp-response",
+        "open_ports": null
+      }
+    ]
+  }
+}

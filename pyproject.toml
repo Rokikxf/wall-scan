@@ -3,9 +3,9 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "wall-template"
+name = "wall-scan"
 dynamic = ["version"]
-description = "Template for wall-* command-line tools."
+description = "Discovers devices on IPv4 networks using nmap."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
@@ -19,10 +19,10 @@ dev = [
 ]
 
 [project.scripts]
-wall-template = "wall_template.cli:main"
+wall-scan = "wall_scan.cli:main"
 
 [tool.hatch.version]
-path = "src/wall_template/__init__.py"
+path = "src/wall_scan/__init__.py"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.94SVN scan initiated Thu Oct  8 09:30:00 2026 as: nmap -oX - -T4 -&#45;privileged -p 22,80,443,445,3389,9100 192.168.1.0/24 -->
+<nmaprun scanner="nmap" args="nmap -oX - -T4 --privileged -p 22,80,443,445,3389,9100 192.168.1.0/24" start="1791451800" startstr="Thu Oct  8 09:30:00 2026" version="7.94SVN" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="6" services="22,80,443,445,3389,9100"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<hosthint><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.1" addrtype="ipv4"/>
+<address addr="50:C7:BF:12:34:56" addrtype="mac" vendor="TP-Link Technologies"/>
+<hostnames>
+</hostnames>
+</hosthint>
+<hosthint><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.20" addrtype="ipv4"/>
+<address addr="D4:81:D7:0A:1B:2C" addrtype="mac" vendor="Dell"/>
+<hostnames>
+</hostnames>
+</hosthint>
+<host starttime="1791451801" endtime="1791451803"><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.1" addrtype="ipv4"/>
+<address addr="50:C7:BF:12:34:56" addrtype="mac" vendor="TP-Link Technologies"/>
+<hostnames>
+<hostname name="router.lan" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="4">
+<extrareasons reason="reset" count="4" proto="tcp" ports="22,445,3389,9100"/>
+</extraports>
+<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="64"/><service name="http" method="table" conf="3"/></port>
+<port protocol="tcp" portid="443"><state state="open" reason="syn-ack" reason_ttl="64"/><service name="https" method="table" conf="3"/></port>
+</ports>
+<times srtt="1840" rttvar="1210" to="100000"/>
+</host>
+<host starttime="1791451801" endtime="1791451803"><status state="up" reason="localhost-response" reason_ttl="0"/>
+<address addr="192.168.1.10" addrtype="ipv4"/>
+<hostnames>
+<hostname name="wall-vm.lan" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="5">
+<extrareasons reason="reset" count="5" proto="tcp" ports="80,443,445,3389,9100"/>
+</extraports>
+<port protocol="tcp" portid="22"><state state="open" reason="syn-ack" reason_ttl="64"/><service name="ssh" method="table" conf="3"/></port>
+</ports>
+<times srtt="45" rttvar="12" to="100000"/>
+</host>
+<host starttime="1791451801" endtime="1791451805"><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.20" addrtype="ipv4"/>
+<address addr="D4:81:D7:0A:1B:2C" addrtype="mac" vendor="Dell"/>
+<hostnames>
+<hostname name="office-pc01.lan" type="PTR"/>
+</hostnames>
+<ports><extraports state="filtered" count="4">
+<extrareasons reason="no-response" count="4" proto="tcp" ports="22,80,443,9100"/>
+</extraports>
+<port protocol="tcp" portid="445"><state state="open" reason="syn-ack" reason_ttl="128"/><service name="microsoft-ds" method="table" conf="3"/></port>
+<port protocol="tcp" portid="3389"><state state="open" reason="syn-ack" reason_ttl="128"/><service name="ms-wbt-server" method="table" conf="3"/></port>
+</ports>
+<times srtt="2210" rttvar="1530" to="100000"/>
+</host>
+<host starttime="1791451801" endtime="1791451803"><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.50" addrtype="ipv4"/>
+<address addr="3C:52:82:AB:CD:EF" addrtype="mac" vendor="Hewlett Packard"/>
+<hostnames>
+<hostname name="npi1a2b3c.lan" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="3">
+<extrareasons reason="reset" count="3" proto="tcp" ports="22,445,3389"/>
+</extraports>
+<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="255"/><service name="http" method="table" conf="3"/></port>
+<port protocol="tcp" portid="443"><state state="open" reason="syn-ack" reason_ttl="255"/><service name="https" method="table" conf="3"/></port>
+<port protocol="tcp" portid="9100"><state state="open" reason="syn-ack" reason_ttl="255"/><service name="jetdirect" method="table" conf="3"/></port>
+</ports>
+<times srtt="3920" rttvar="2410" to="100000"/>
+</host>
+<host starttime="1791451801" endtime="1791451803"><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.77" addrtype="ipv4"/>
+<address addr="6A:1F:3E:90:22:41" addrtype="mac"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="closed" count="6">
+<extrareasons reason="reset" count="6" proto="tcp" ports="22,80,443,445,3389,9100"/>
+</extraports>
+</ports>
+<times srtt="15230" rttvar="9820" to="100000"/>
+</host>
+<runstats><finished time="1791451841" timestr="Thu Oct  8 09:30:41 2026" summary="Nmap done at Thu Oct  8 09:30:41 2026; 256 IP addresses (5 hosts up) scanned in 41.23 seconds" elapsed="41.23" exit="success"/><hosts up="5" down="251" total="256"/>
+</runstats>
+</nmaprun>

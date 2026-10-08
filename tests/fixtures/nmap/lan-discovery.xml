@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.94SVN scan initiated Thu Oct  8 09:28:12 2026 as: nmap -oX - -T4 -&#45;privileged -sn 192.168.1.0/24 -->
+<nmaprun scanner="nmap" args="nmap -oX - -T4 --privileged -sn 192.168.1.0/24" start="1791451692" startstr="Thu Oct  8 09:28:12 2026" version="7.94SVN" xmloutputversion="1.05">
+<verbose level="0"/>
+<debugging level="0"/>
+<host><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.1" addrtype="ipv4"/>
+<address addr="50:C7:BF:12:34:56" addrtype="mac" vendor="TP-Link Technologies"/>
+<hostnames>
+<hostname name="router.lan" type="PTR"/>
+</hostnames>
+<times srtt="1840" rttvar="5000" to="100000"/>
+</host>
+<host><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="192.168.1.50" addrtype="ipv4"/>
+<address addr="3C:52:82:AB:CD:EF" addrtype="mac" vendor="Hewlett Packard"/>
+<hostnames>
+<hostname name="npi1a2b3c.lan" type="PTR"/>
+</hostnames>
+<times srtt="3920" rttvar="5000" to="100000"/>
+</host>
+<runstats><finished time="1791451694" timestr="Thu Oct  8 09:28:14 2026" summary="Nmap done at Thu Oct  8 09:28:14 2026; 256 IP addresses (2 hosts up) scanned in 2.39 seconds" elapsed="2.39" exit="success"/><hosts up="2" down="254" total="256"/>
+</runstats>
+</nmaprun>

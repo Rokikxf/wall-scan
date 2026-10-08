@@ -3,7 +3,7 @@
 import io
 import json
 
-from wall_template.envelope import SCHEMA_VERSION, Run, emit
+from wall_scan.envelope import SCHEMA_VERSION, Run, emit
 
 
 def new_run():

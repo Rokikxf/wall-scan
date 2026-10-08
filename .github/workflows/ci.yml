@@ -21,6 +21,12 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
 
+      - name: Install nmap
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q nmap
+          nmap --version
+
       - name: Install
         run: pip install -e ".[dev]"
 

@@ -1,18 +1,21 @@
 {
   "schema_version": "1.0",
-  "tool": { "name": "wall-template", "version": "0.1.0" },
-  "started_at": "2026-10-08T09:31:00.002Z",
-  "duration_ms": 1,
+  "tool": { "name": "wall-scan", "version": "0.1.0" },
+  "started_at": "2026-10-08T09:31:05Z",
+  "duration_ms": 14,
   "status": "error",
   "errors": [
     {
-      "code": "internal_error",
-      "message": "RuntimeError: simulated failure",
+      "code": "nmap_not_found",
+      "message": "nmap executable not found: nmap",
       "target": null
     }
   ],
   "params": {
-    "addresses": ["192.168.1.1"]
+    "targets": ["192.168.1.0/24"],
+    "ports": "22,80,443,445,3389,9100",
+    "privileged": true,
+    "timeout_s": 600
   },
   "result": null
 }
