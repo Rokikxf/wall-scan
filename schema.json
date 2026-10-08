@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "wall-template output",
+  "description": "Placeholder tool: reports whether IPv4 addresses are private. Usage: wall-template IP [IP ...]. When building a real tool, replace this description and the params and result definitions; keep everything else (the envelope) identical to the other wall-* schemas.",
+  "type": "object",
+  "required": ["schema_version", "tool", "started_at", "duration_ms", "status", "errors", "params", "result"],
+  "properties": {
+    "schema_version": { "$ref": "#/$defs/schema_version" },
+    "tool": { "$ref": "#/$defs/tool" },
+    "started_at": { "$ref": "#/$defs/timestamp" },
+    "duration_ms": {
+      "description": "Wall-clock run time in milliseconds.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "description": "ok: finished with no errors. partial: finished, result present but incomplete (see errors). error: failed, result is null.",
+      "enum": ["ok", "partial", "error"]
+    },
+    "errors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/error" }
+    },
+    "params": { "$ref": "#/$defs/params" },
+    "result": {
+      "description": "Tool-specific payload; null when status is error.",
+      "type": ["object", "null"]
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "ok -> no errors, result present",
+      "if": { "required": ["status"], "properties": { "status": { "const": "ok" } } },
+      "then": { "properties": { "errors": { "maxItems": 0 }, "result": { "$ref": "#/$defs/result" } } }
+    },
+    {
+      "$comment": "partial -> at least one error, result present",
+      "if": { "required": ["status"], "properties": { "status": { "const": "partial" } } },
+      "then": { "properties": { "errors": { "minItems": 1 }, "result": { "$ref": "#/$defs/result" } } }
+    },
+    {
+      "$comment": "error -> at least one error, result is null",
+      "if": { "required": ["status"], "properties": { "status": { "const": "error" } } },
+      "then": { "properties": { "errors": { "minItems": 1 }, "result": { "type": "null" } } }
+    }
+  ],
+  "$defs": {
+    "schema_version": {
+      "description": "Contract version, MAJOR.MINOR. This file is the contract for major version 1: every 1.x document must validate against it.",
+      "type": "string",
+      "pattern": "^1\\.(0|[1-9][0-9]*)$"
+    },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "description": "Program that produced the document, e.g. \"wall-scan\".",
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "description": "Package version of that program (its git tag without the leading v). Independent of schema_version.",
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)"
+        }
+      }
+    },
+    "timestamp": {
+      "description": "RFC 3339 date-time in UTC with a Z suffix, e.g. \"2026-10-08T09:30:00Z\". Fractional seconds allowed.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "target"],
+      "properties": {
+        "code": {
+          "description": "Machine-readable snake_case code. Open set: new codes may appear in any minor version, so consumers must handle codes they do not know.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "message": {
+          "description": "Human-readable explanation, safe to show in the UI.",
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "description": "The input (usually an IP address) this error is about, or null for an error affecting the whole run.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+
+    "ipv4": {
+      "type": "string",
+      "format": "ipv4"
+    },
+    "params": {
+      "description": "The inputs of this run, echoed back so a stored result describes itself.",
+      "type": "object",
+      "required": ["addresses"],
+      "properties": {
+        "addresses": {
+          "description": "IPv4 addresses from the command line, in the order given.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ipv4" }
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["addresses"],
+      "properties": {
+        "addresses": {
+          "description": "One entry per distinct address, sorted numerically.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/address" }
+        }
+      }
+    },
+    "address": {
+      "type": "object",
+      "required": ["ip", "private"],
+      "properties": {
+        "ip": { "$ref": "#/$defs/ipv4" },
+        "private": {
+          "description": "true for addresses in private-use ranges such as 192.168.0.0/16.",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
