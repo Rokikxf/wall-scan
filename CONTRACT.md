@@ -103,7 +103,7 @@ Record every schema change in `CHANGELOG.md` with the new `schema_version`,
 and change `SCHEMA_VERSION` in `envelope.py` to match.
 
 **In the hub**, keep a copy of each schema for every major version the hub
-understands, for example `contracts/wall-scan.v1.json`. Pick the copy using the
+understands, for example `contracts/wall-scan/v1.json`. Pick the copy using the
 major number in `schema_version`, and reject unknown majors with a clear
 message. Do not load the schema from the installed tool package: the hub's copy
 records what the *hub's code* expects. The same copy can also validate a
@@ -115,11 +115,15 @@ future Rust scanner, which will not be pip-installed.
 import json
 from pathlib import Path
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import best_match
 
 schema = json.loads(Path("schema.json").read_text(encoding="utf-8"))
 validator = Draft202012Validator(schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
-errors = sorted(validator.iter_errors(doc), key=lambda e: list(e.path))
+error = best_match(validator.iter_errors(doc))  # None when doc is valid
 ```
+
+`best_match` picks the most relevant error when there are several, which is
+the one worth showing to a person. The hub reports errors this way.
 
 Two gotchas, both silent:
 
@@ -135,7 +139,7 @@ Two gotchas, both silent:
   schema and that every fixture follows it. `tests/test_cli.py` validates the
   tool's real output.
 - **Across tools**, the envelope must be identical in every `schema.json`,
-  because there is no shared library to enforce it. `check_schemas.py` compares
-  the envelopes and tests each schema against deliberately broken documents.
-  It lives in `wall-contracts/` until the hub exists, and then moves into the
-  hub next to its `contracts/` copies, so the hub's CI runs it.
+  because there is no shared library to enforce it. In wall-hub,
+  `tests/test_contracts.py` compares the envelopes of the hub's copies in
+  `contracts/` and tests each contract against deliberately broken documents,
+  so the hub's CI catches any drift.
