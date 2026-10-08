@@ -1,7 +1,8 @@
 """Real nmap against 127.0.0.1, so no other machine is touched.
 
-Skipped when nmap is not installed. CI installs it. To run locally with an
-nmap that is not on PATH, set WALL_SCAN_NMAP to its path.
+Skipped when nmap is not installed, unless WALL_SCAN_REQUIRE_NMAP=1, which CI
+sets so that a missing nmap fails the build instead of silently skipping the
+test. To run locally with an nmap that is not on PATH, set WALL_SCAN_NMAP.
 """
 
 import json
@@ -14,10 +15,12 @@ import pytest
 from wall_scan import cli
 
 NMAP = os.environ.get("WALL_SCAN_NMAP") or shutil.which("nmap")
-pytestmark = pytest.mark.skipif(NMAP is None, reason="nmap is not installed")
+REQUIRED = os.environ.get("WALL_SCAN_REQUIRE_NMAP") == "1"
+pytestmark = pytest.mark.skipif(NMAP is None and not REQUIRED, reason="nmap is not installed")
 
 
 def test_scan_localhost(capsys, validator):
+    assert NMAP, "WALL_SCAN_REQUIRE_NMAP=1 but nmap was not found"
     code = cli.main(["127.0.0.1", "--ports", "1-1024", "--nmap", NMAP, "--timeout-s", "120"])
     doc = json.loads(capsys.readouterr().out)
 

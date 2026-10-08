@@ -37,6 +37,9 @@ jobs:
 
       - name: Test
         run: pytest
+        env:
+          # nmap is installed above: fail rather than skip the real-nmap test.
+          WALL_SCAN_REQUIRE_NMAP: "1"
 
       - name: Tag matches package version
         if: startsWith(github.ref, 'refs/tags/v')
