@@ -7,6 +7,24 @@ state the new `schema_version` (see [CONTRACT.md](CONTRACT.md)).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-09
+
+Output schema version unchanged (1.0): `params.targets` lists the networks
+`--local` found.
+
+### Added
+
+- `--local`: scan every private network this machine is directly attached
+  to, found in the kernel's routing table (Linux). Docker, VPN and other
+  virtual interfaces, single-host and link-local routes, public networks and
+  networks larger than a /16 are skipped; `-v` logs each skipped route and why.
+- `--exclude-interface IFACE` (repeatable) to leave an attached network out.
+
+### Changed
+
+- `TARGET` is optional when `--local` is given; typed targets and detected
+  networks can be combined.
+
 ## [0.1.0] - 2026-10-08
 
 First release. Output schema version 1.0.

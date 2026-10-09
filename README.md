@@ -15,13 +15,16 @@ Only scan networks you own or have written permission to scan.
 ## Usage
 
 ```
-wall-scan TARGET [TARGET ...] [--ports LIST | --no-ports] [--privileged]
+wall-scan [TARGET ...] [--local [--exclude-interface IFACE ...]]
+          [--ports LIST | --no-ports] [--privileged]
           [--timeout-s N] [--allow-public] [--nmap PATH] [-v] [--version]
 ```
 
 | Option            | Meaning                                                                    |
 |-------------------|----------------------------------------------------------------------------|
-| `TARGET`          | IPv4 address or CIDR range, e.g. `192.168.1.0/24`. At most a /16.          |
+| `TARGET`          | IPv4 address or CIDR range, e.g. `192.168.1.0/24`. At most a /16. Optional with `--local`. |
+| `--local`         | Also scan every network this machine is directly attached to; no IP to type. See below. |
+| `--exclude-interface IFACE` | With `--local`: skip the network on this interface. Repeatable.  |
 | `--ports LIST`    | TCP ports to check, e.g. `22,80,8000-8100`. The default covers common office services: `21,22,23,53,80,135,139,443,445,515,631,3389,5900,8080,9100`. |
 | `--no-ports`      | Only discover devices (`nmap -sn`). `open_ports` is then `null`.          |
 | `--privileged`    | nmap has raw-socket privileges (see below). Enables ARP discovery, MAC addresses and vendors. |
@@ -49,6 +52,32 @@ One device from a scan of `192.168.1.0/24`:
 
 Complete documents are in [tests/fixtures/](tests/fixtures/): `ok.json`,
 `discovery-only.json` and `error.json`.
+
+## Scanning the local networks (`--local`)
+
+`wall-scan --local --privileged` finds the networks to scan by itself. It reads
+the kernel's routing table (`/proc/net/route`, Linux only). A route with no
+gateway is a network the machine is directly attached to.
+
+Some attached networks are never scanned automatically:
+
+| Skipped                                  | Why                                                  |
+|------------------------------------------|------------------------------------------------------|
+| Docker, VPN and other virtual interfaces (`docker0`, `br-*`, `veth*`, `tun*`, `wg*`, `tailscale*`, ...) | Docker's own networks hold no devices; a VPN leads to someone else's network |
+| Routes through a router, single hosts (/32), link-local | Not a network this machine sits on        |
+| Public networks, and networks larger than a /16 | The same limits as for typed targets      |
+
+`params.targets` in the output lists the networks that were actually scanned,
+and `-v` logs every skipped route with the reason. Use `--exclude-interface`
+for an attached network you do not want scanned, such as VirtualBox's NAT
+network (`enp0s3`, 10.0.2.0/24) on a lab VM.
+
+In Docker, the scanner must use the host's network (`network_mode: host`), so
+that it sees the host's routes and not the container's.
+
+`--local` scans whatever network the machine is plugged into. On a laptop in
+someone else's office, that is their network: only use it where you are
+allowed to scan.
 
 ## Privileges
 

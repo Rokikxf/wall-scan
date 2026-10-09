@@ -12,7 +12,7 @@ import re
 import sys
 from typing import Any
 
-from wall_scan import __version__, nmap
+from wall_scan import __version__, networks, nmap
 from wall_scan.envelope import Run, emit
 
 TOOL_NAME = "wall-scan"
@@ -54,10 +54,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "targets",
-        nargs="+",
+        nargs="*",
         type=target,
         metavar="TARGET",
         help="IPv4 address or CIDR range, e.g. 192.168.1.0/24",
+    )
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        help="also scan every private network this machine is directly attached to "
+        "(Linux; Docker and VPN interfaces are skipped)",
+    )
+    parser.add_argument(
+        "--exclude-interface",
+        action="append",
+        default=[],
+        metavar="IFACE",
+        help="with --local: do not scan the network on this interface (repeatable)",
     )
     ports = parser.add_mutually_exclusive_group()
     ports.add_argument(
@@ -101,13 +114,34 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.timeout_s < 1:
         parser.error("--timeout-s must be at least 1")
+    if args.exclude_interface and not args.local:
+        parser.error("--exclude-interface only applies to --local")
+    if not args.targets and not args.local:
+        parser.error("give at least one TARGET, or --local")
     public = [as_text(t) for t in args.targets if not t.is_private]
     if public and not args.allow_public:
         parser.error(
             f"not a private address range: {', '.join(public)} "
             "(use --allow-public only for networks you are allowed to scan)"
         )
+    args.skipped_routes = []
+    if args.local:
+        add_local_networks(parser, args)
     return args
+
+
+def add_local_networks(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Append the detected networks to args.targets, skipping ones already given."""
+    try:
+        found, args.skipped_routes = networks.local_networks(set(args.exclude_interface))
+    except networks.DetectionError as exc:
+        parser.error(f"--local: {exc} (it needs Linux)")
+    if not found:
+        skipped = "; ".join(
+            f"{r.interface} {r.network}: {reason}" for r, reason in args.skipped_routes
+        )
+        parser.error(f"--local found no network to scan (skipped: {skipped or 'none'})")
+    args.targets += [network for network in found if network not in args.targets]
 
 
 def as_text(network: ipaddress.IPv4Network) -> str:
@@ -140,6 +174,8 @@ def main(argv: list[str] | None = None) -> int:
         stream=sys.stderr,
         format="%(name)s: %(message)s",
     )
+    for route, reason in args.skipped_routes:
+        log.info("--local: not scanning %s on %s: %s", route.network, route.interface, reason)
     params = {
         "targets": [as_text(t) for t in args.targets],
         "ports": None if args.no_ports else args.ports,
