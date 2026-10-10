@@ -28,6 +28,7 @@ def test_scan_localhost(capsys, validator):
     assert code == 0, doc["errors"]
     assert doc["result"]["hosts_scanned"] == 1
     assert doc["result"]["engine"]["version"]
+    assert doc["result"]["networks"] == []  # a single address is not a network
     if sys.platform == "linux":
         # nmap on Linux always finds the local host. On Windows without Npcap, host
         # discovery for 127.0.0.1 fails, so the host is not listed there.

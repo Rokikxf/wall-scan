@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0",
-  "tool": { "name": "wall-scan", "version": "0.1.0" },
+  "schema_version": "1.1",
+  "tool": { "name": "wall-scan", "version": "0.3.0" },
   "started_at": "2026-10-08T09:30:00Z",
   "duration_ms": 41230,
   "status": "ok",
@@ -66,6 +66,15 @@
         "hostname": null,
         "discovery_reason": "arp-response",
         "open_ports": []
+      }
+    ],
+    "networks": [
+      {
+        "network": "192.168.1.0/24",
+        "attached": true,
+        "interface": "eth0",
+        "address": "192.168.1.10",
+        "gateway": "192.168.1.1"
       }
     ]
   }

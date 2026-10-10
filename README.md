@@ -53,6 +53,35 @@ One device from a scan of `192.168.1.0/24`:
 Complete documents are in [tests/fixtures/](tests/fixtures/): `ok.json`,
 `discovery-only.json` and `error.json`.
 
+## How each network is reached
+
+Besides the devices, `result.networks` describes every scanned range (not
+single addresses), from the scanning machine's routing table:
+
+```json
+{
+  "network": "192.168.1.0/24",
+  "attached": true,
+  "interface": "eth0",
+  "address": "192.168.1.10",
+  "gateway": "192.168.1.1"
+}
+```
+
+| Field       | Meaning                                                                  |
+|-------------|--------------------------------------------------------------------------|
+| `attached`  | The machine is directly on this network, so MAC addresses are visible. `false`: it is reached through a router. |
+| `interface` | The interface the traffic leaves on.                                      |
+| `address`   | The machine's own address in the network; it also shows up as a device, with `discovery_reason` `localhost-response`. |
+| `gateway`   | The network's router: for an attached network, the gateway of a default route out of the same interface, if it is inside the network. For a network behind a router, that router. |
+
+This is what wall-hub draws its network map from. Nothing extra is sent on
+the network: the routing table is a file, and the own address comes from
+connecting a UDP socket, which only asks the operating system which address it
+would use. On a machine without `/proc/net/route` (Windows, macOS), only
+`address` is filled in. Added in schema version 1.1, so 1.0 documents from
+wall-scan 0.2 and older have no `networks`.
+
 ## Scanning the local networks (`--local`)
 
 `wall-scan --local --privileged` finds the networks to scan by itself. It reads
@@ -105,7 +134,7 @@ capabilities); on the default bridge network nmap sees no MAC addresses.
 ## Output
 
 Every run that gets past argument parsing prints exactly one JSON document to
-stdout, described by [schema.json](schema.json) (schema version 1.0). Logs and
+stdout, described by [schema.json](schema.json) (schema version 1.1). Logs and
 nmap's own warnings go to stderr.
 
 | Exit code | Meaning                                                   |
@@ -148,13 +177,13 @@ always runs there.
 2. Commit, then tag and push the tag:
 
    ```bash
-   git tag v0.1.0
-   git push origin main v0.1.0
+   git tag v0.3.0
+   git push origin main v0.3.0
    ```
 
 CI fails a tag that does not match `__version__`. The hub installs an exact
 release:
 
 ```bash
-pip install "wall-scan @ git+https://github.com/Rokikxf/wall-scan@v0.1.0"
+pip install "wall-scan @ git+https://github.com/Rokikxf/wall-scan@v0.3.0"
 ```

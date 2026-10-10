@@ -38,13 +38,18 @@ def test_command_for_unprivileged_discovery_only():
 # --- fixtures: hand-written LAN scans must produce the schema examples exactly ---
 
 
+def nmap_part(document):
+    """The result without networks, which comes from the routing table (see test_networks)."""
+    return {key: value for key, value in document["result"].items() if key != "networks"}
+
+
 def test_lan_port_scan_gives_the_ok_example(nmap_xml, example):
-    assert parse(nmap_xml("lan-ports.xml"), ports_scanned=True) == example("ok.json")["result"]
+    assert parse(nmap_xml("lan-ports.xml"), ports_scanned=True) == nmap_part(example("ok.json"))
 
 
 def test_lan_discovery_gives_the_discovery_only_example(nmap_xml, example):
     result = parse(nmap_xml("lan-discovery.xml"), ports_scanned=False)
-    assert result == example("discovery-only.json")["result"]
+    assert result == nmap_part(example("discovery-only.json"))
 
 
 # --- fixtures: real nmap 7.92 output ---

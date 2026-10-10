@@ -10,7 +10,7 @@ import time
 from datetime import UTC, datetime
 from typing import Any, TextIO
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 
 
 class Run:

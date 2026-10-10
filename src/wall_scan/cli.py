@@ -153,6 +153,17 @@ def running_as_root() -> bool:
     return hasattr(os, "geteuid") and os.geteuid() == 0
 
 
+def describe_networks(targets: list[ipaddress.IPv4Network]) -> list[dict[str, Any]]:
+    """result.networks: how each scanned range (not single addresses) is reached."""
+    try:
+        routes = networks.read_routes()
+    except networks.DetectionError as exc:
+        log.info("network details limited: %s", exc)
+        routes = None
+    # A /31 or /32 is a host, not a network with a broadcast address and a router.
+    return [networks.describe(t, routes) for t in targets if t.prefixlen <= 30]
+
+
 def collect(args: argparse.Namespace, run: Run) -> dict[str, Any] | None:
     """Run nmap and return the result object, or record an error and return None."""
     params = run.params
@@ -161,10 +172,12 @@ def collect(args: argparse.Namespace, run: Run) -> dict[str, Any] | None:
     )
     try:
         xml = nmap.run(command, params["timeout_s"])
-        return nmap.parse(xml, ports_scanned=params["ports"] is not None)
+        result = nmap.parse(xml, ports_scanned=params["ports"] is not None)
     except nmap.ScanError as exc:
         run.error(exc.code, exc.message)
         return None
+    result["networks"] = describe_networks(args.targets)
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -4,16 +4,30 @@ nmap itself is replaced by a fake that returns saved XML (see fake_nmap), so the
 tests need neither nmap nor network access. test_integration.py runs the real thing.
 """
 
+import ipaddress
 import json
 import shutil
 import subprocess
 import sysconfig
+from pathlib import Path
 
 import pytest
 
-from wall_scan import cli
+from wall_scan import cli, networks
 
 LAN_PORTS = "22,80,443,445,3389,9100"
+LAN_ROUTES = str(Path(__file__).parent / "fixtures" / "proc-net-route-lan.txt")
+OWN_ADDRESS = ipaddress.IPv4Address("192.168.1.10")
+
+
+@pytest.fixture(autouse=True)
+def office_pc(monkeypatch):
+    """Scan from an office PC: 192.168.1.10 on eth0, router 192.168.1.1. The routing
+    table and addresses of the machine running the tests never reach the output."""
+    monkeypatch.setattr(networks, "ROUTE_FILE", LAN_ROUTES)
+    monkeypatch.setattr(
+        networks, "source_address", lambda net: str(OWN_ADDRESS) if OWN_ADDRESS in net else None
+    )
 
 
 @pytest.fixture

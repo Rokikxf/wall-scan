@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0",
-  "tool": { "name": "wall-scan", "version": "0.1.0" },
+  "schema_version": "1.1",
+  "tool": { "name": "wall-scan", "version": "0.3.0" },
   "started_at": "2026-10-08T09:31:05Z",
   "duration_ms": 14,
   "status": "error",

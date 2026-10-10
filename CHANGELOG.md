@@ -7,6 +7,17 @@ state the new `schema_version` (see [CONTRACT.md](CONTRACT.md)).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-10
+
+Output schema version 1.1: `result.networks` is new. 1.0 consumers ignore it.
+
+### Added
+
+- `result.networks`: for every scanned range, whether this machine is
+  attached to it, the interface, its own address in it and the network's
+  gateway, read from the routing table. Single addresses have no entry. On
+  systems without `/proc/net/route` only the address is known.
+
 ## [0.2.0] - 2026-10-09
 
 Output schema version unchanged (1.0): `params.targets` lists the networks

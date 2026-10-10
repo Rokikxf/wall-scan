@@ -187,3 +187,94 @@ def test_local_without_a_routing_table(capsys, monkeypatch, tmp_path, fake_nmap)
 
     assert exc.value.code == 2
     assert "it needs Linux" in capsys.readouterr().err
+
+
+# --- how each scanned network is reached (result.networks) ---
+
+# The lab VM after a bridged adapter was added: NAT on enp0s3 (default route,
+# metric 100), the LAN on enp0s9 (a second default route via the LAN's router,
+# metric 200) and host-only on enp0s8.
+VM_BRIDGED = str(Path(__file__).parent / "fixtures" / "proc-net-route-vm-bridged.txt")
+VM_ADDRESSES = {"10.180.103.0/24": "10.180.103.124", "192.168.56.0/24": "192.168.56.10"}
+
+
+@pytest.fixture
+def vm_addresses(monkeypatch):
+    monkeypatch.setattr(networks, "source_address", lambda net: VM_ADDRESSES.get(str(net)))
+
+
+@pytest.mark.parametrize(
+    "network, attached, interface, gateway",
+    [
+        ("10.180.103.0/24", True, "enp0s9", "10.180.103.140"),
+        ("192.168.56.0/24", True, "enp0s8", None),
+        ("10.0.2.0/24", True, "enp0s3", "10.0.2.2"),
+        ("10.20.0.0/24", False, "enp0s3", "10.0.2.2"),
+    ],
+    ids=["lan-router-on-second-default", "host-only-no-router", "nat", "remote-lowest-metric"],
+)
+def test_how_the_lab_vm_reaches_each_network(vm_addresses, network, attached, interface, gateway):
+    entry = networks.describe(ipaddress.IPv4Network(network), networks.read_routes(VM_BRIDGED))
+
+    assert entry == {
+        "network": network,
+        "attached": attached,
+        "interface": interface,
+        "address": VM_ADDRESSES.get(network),
+        "gateway": gateway,
+    }
+
+
+def test_a_default_route_without_a_gateway_attaches_nothing(tmp_path, vm_addresses):
+    routes = tmp_path / "route"
+    routes.write_text(HEADER + route_line("ppp0", "0.0.0.0/0") + route_line("eth0", "10.1.0.0/24"))
+
+    entry = networks.describe(ipaddress.IPv4Network("10.20.0.0/24"), networks.read_routes(routes))
+
+    assert (entry["attached"], entry["interface"], entry["gateway"]) == (False, "ppp0", None)
+
+
+def test_no_route_at_all(vm_addresses):
+    entry = networks.describe(ipaddress.IPv4Network("10.20.0.0/24"), [])
+
+    assert (entry["attached"], entry["interface"], entry["gateway"]) == (False, None, None)
+
+
+def test_without_a_routing_table_only_the_address_is_known(vm_addresses):
+    entry = networks.describe(ipaddress.IPv4Network("10.180.103.0/24"), None)
+
+    assert entry == {"network": "10.180.103.0/24", "attached": None, "interface": None,
+                     "address": "10.180.103.124", "gateway": None}  # fmt: skip
+
+
+def test_source_address_sends_nothing_and_needs_an_address_inside():
+    # Connecting a UDP socket only asks the routing table; these work offline too.
+    assert networks.source_address(ipaddress.IPv4Network("127.0.0.0/8")) == "127.0.0.1"
+    assert networks.source_address(ipaddress.IPv4Network("192.0.2.0/24")) is None  # TEST-NET-1
+
+
+def test_networks_in_the_result(capsys, monkeypatch, fake_nmap, vm_addresses, validator):
+    monkeypatch.setattr(networks, "ROUTE_FILE", VM_BRIDGED)
+
+    code, doc = invoke(capsys, "--local", "--exclude-interface", "enp0s3", "10.180.103.5")
+
+    validator.validate(doc)
+    assert code == 0
+    assert doc["params"]["targets"] == ["10.180.103.5", "10.180.103.0/24", "192.168.56.0/24"]
+    assert doc["result"]["networks"] == [  # the single address has no entry
+        {"network": "10.180.103.0/24", "attached": True, "interface": "enp0s9",
+         "address": "10.180.103.124", "gateway": "10.180.103.140"},
+        {"network": "192.168.56.0/24", "attached": True, "interface": "enp0s8",
+         "address": "192.168.56.10", "gateway": None},
+    ]  # fmt: skip
+
+
+def test_networks_without_a_routing_table(capsys, monkeypatch, tmp_path, fake_nmap, validator):
+    monkeypatch.setattr(networks, "ROUTE_FILE", str(tmp_path / "missing"))  # e.g. Windows
+    monkeypatch.setattr(networks, "source_address", lambda net: None)
+
+    code, doc = invoke(capsys, "192.168.1.0/24")
+
+    validator.validate(doc)
+    assert code == 0  # the scan itself is not affected
+    assert doc["result"]["networks"][0]["attached"] is None
